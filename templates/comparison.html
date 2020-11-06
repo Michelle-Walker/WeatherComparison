@@ -1,13 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Comparison</title>
-</head>
-<body>
+    <style>
+    {
+        box-sizing: border-box;
+    }
+    /* Set additional styling options for the columns*/
+    .column {
+    float: left;
+    width: 50%;
+    }
+
+    .row:after {
+    content: "";
+    display: table;
+    clear: both;
+    }
+    </style>
+ </head>
+ <body>
     <h1>Weather Comparison by City</h1>
-    <p>Check it out</p>
-    <p>{{city1}}: {{main1}} K, {{weather1}}, {{description1}}</p>
-    <p>{{city2}}: {{main2}} K, {{weather2}}, {{description2}}</p>
-</body>
+    <div class="row">
+        <div class="column" style="background-color:#DBD6D5;">
+            <h2 style="text-align:right">{{city1}} &nbsp</h2>
+            <p style="text-align:right">
+            {% for item in weather_string1%}
+                <p style="text-align:right">{{item}} &nbsp</p>
+            {% endfor %} </p>
+        </div>
+        <div class="column" style="background-color:#93B0BD;">
+            <h2>&nbsp {{city2}}</h2>
+            {% for item in weather_string2%}
+                <p>&nbsp {{item}}</p>
+            {% endfor %}
+
+        </div>
+    </div>
+ </body>
 </html>

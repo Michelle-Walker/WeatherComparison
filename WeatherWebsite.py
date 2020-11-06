@@ -1,5 +1,3 @@
-# TODO: First, learn how to get user input
-
 from flask import Flask, render_template, request, url_for
 import requests
 import json
@@ -14,46 +12,9 @@ def city_check(city):
     return city
 
 
-@app.route("/")
+@app.route("/", methods=["POST"])
 def home():
-    # TODO: get cities from user
     return render_template("index.html")
-
-'''
-@app.route("/nice", methods=["POST"])
-def nice():
-    city1 = request.form["city1"]
-    return f"<h1> {city1} is nice </h1>"
-'''
-
-
-@app.route("/Compare", methods=["POST"])
-def city_comparison():
-    # TODO: display city comparison
-    c1 = request.form["city1"]
-    c2 = request.form["city2"]
-    if "c1" in request.args:
-        c1 = request.args["c1"]
-    if "c2" in request.args:
-        c2 = request.args["c2"]
-    if c1 is not None and c2 is not None:
-        return f"Check out {c1} and {c2}!"
-
-
-@app.route("/checkagain", methods=["POST"])
-def check():
-    url = "http://api.openweathermap.org/data/2.5/weather"
-    c1 = request.form["city1"]
-    if "c1" in request.args:
-        c1 = request.args["c1"]
-    payload = {
-        'lat': c1,
-        'lon': "139",
-        'appid': "2f086cf6129c094ad1c057393633cd53"
-    }
-    response = requests.request("GET", url, params=payload)
-    # return f"check out lat {c1} and lon"
-    return response.text
 
 
 @app.route("/comparetrial", methods=["POST"])
@@ -78,22 +39,52 @@ def comparetrial():
         response2 = requests.request("POST", url, params=payload2)
         r1 = json.loads(response1.text)
         r2 = json.loads(response2.text)
-        city1 = r1["name"]
-        city2 = r2["name"]
-        weather1 = r1["weather"]
-        weather2 = r2["weather"]
-        main1 = r1["main"]
-        main2 = r2["main"]
-        print(type(main2))
-        print(main2["temp"])
-        return redirect(url_for("comparison", c1=str(city1), m1=main1["temp"], w1=weather1[0]["main"], d1=weather1[0]["description"], c2=str(city2), m2=main2["temp"], w2=weather2[0]["main"], d2=weather2[0]["description"]))
+        if response1 and response2:
+            city1 = r1["name"]
+            city2 = r2["name"]
+        else:
+            return redirect(url_for("city_not_found"))
+
+        weather_lst_one = weather_string(r1)
+        weather_lst_two = weather_string(r2)
+        return render_template("comparison.html", city1=city1, weather_string1=weather_lst_one, city2=city2, weather_string2=weather_lst_two)
+        # return redirect(url_for("comparison", c1=city1, ws1=weather_lst_one, c2=city2, ws2=weather_lst_two))
 
 
-@app.route("/comparison/<c1>/<m1>/<w1>/<d1>/<c2>/<m2>/<w2>/<d2>", methods=["GET", "POST"])
-def comparison(c1, m1, w1, d1, c2, m2, w2, d2):
-    # return f"<h1>{c1}</h1>"
-    return render_template("comparison.html", city1=c1, main1=m1, weather1=w1, description1=d1, city2=c2, main2=m2, weather2=w2, description2=d2)
+@app.route("/cityNotFound", methods=["POST", "GET"])
+def city_not_found():
+    return render_template("cityNotFound.html")
 
+
+def get_f_temp(response):
+    k_temp = response
+    f_temp = round((k_temp-273.15)*(9/5)+32, 1)
+    return f_temp
+
+
+def weather_string(response):
+    main = response["main"]
+    print(main)
+    temp = get_f_temp(main["temp"])
+    feels_like = get_f_temp(main["feels_like"])
+    min_temp = get_f_temp(main["temp_min"])
+    max_temp = get_f_temp(main["temp_max"])
+    humidity = main["humidity"]
+    weather = response["weather"]
+    description = weather[0]
+    w_des = description["main"]
+    weather_str = "Description: " + w_des + "/ Temperature: " + str(temp) + str(" degrees F") + "/ Feels like: " + str(feels_like) + str(" degrees F") + "/ Minimum Temperature: " + str(min_temp) + str(" degrees F") + "/ Maximum Temperature: " + str(max_temp) + str(" degrees F") + "/ Humidity: " + str(humidity) + "%/"
+
+    place_holder = ""
+    weather_list = []
+    for each in weather_str:
+        if each == "/":
+            weather_list.append(place_holder)
+            place_holder = ""
+        else:
+            place_holder += each
+    print("weather_list: " + str(type(weather_list)))
+    return weather_list
 
 
 if __name__ == "__main__":
