@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for
 import requests
 import json
 from werkzeug.utils import redirect
+from models.WeatherInfo import WeatherInfo
 
 app = Flask(__name__)
 
@@ -39,7 +40,7 @@ def comparetrial():
         r1 = json.loads(response1.text)
         r2 = json.loads(response2.text)  # takes API response and returns json object
 
-        if not response1:
+        if not response1:  # check if city is found
             return redirect(url_for("city_not_found", city=c1))
         elif not response2:
             return redirect(url_for("city_not_found", city=c2))
@@ -47,44 +48,19 @@ def comparetrial():
             city1 = r1["name"]
             city2 = r2["name"]
 
-        weather_lst_one = weather_list(r1)
-        weather_lst_two = weather_list(r2)
-        return render_template("comparison.html", city1=city1, weather_string1=weather_lst_one, city2=city2, weather_string2=weather_lst_two)
+        return render_template("comparison.html", city1=city1, weather1=weather_obj(r1), city2=city2, weather2=weather_obj(r2))
 
 
 @app.route("/cityNotFound/<city>", methods=["GET"])
 def city_not_found(city):
-    # TODO: more descriptive error message here
     return render_template("cityNotFound.html", city=city)
 
 
-def get_f_temp(response):  # converts from K to deg F
-    k_temp = response
-    f_temp = round((k_temp-273.15)*(9/5)+32, 1)
-    return f_temp
-
-
-def weather_list(response):  # turns weather info into list
+def weather_obj(response):  # turns weather info from API into object
     main = response["main"]
-    temp = get_f_temp(main["temp"])
-    feels_like = get_f_temp(main["feels_like"])
-    min_temp = get_f_temp(main["temp_min"])
-    max_temp = get_f_temp(main["temp_max"])
-    humidity = main["humidity"]
-    weather = response["weather"]
-    description = weather[0]
-    w_des = description["main"]
-    weather_str = "Description: " + w_des + "/ Temperature: " + str(temp) + str(" degrees F") + "/ Feels like: " + str(feels_like) + str(" degrees F") + "/ Minimum Temperature: " + str(min_temp) + str(" degrees F") + "/ Maximum Temperature: " + str(max_temp) + str(" degrees F") + "/ Humidity: " + str(humidity) + "%/"
-
-    place_holder = ""
-    weather_lst = []
-    for each in weather_str:
-        if each == "/":
-            weather_lst.append(place_holder)
-            place_holder = ""
-        else:
-            place_holder += each
-    return weather_lst
+    weather = json.loads(json.dumps(main, indent=2), object_hook=lambda d: WeatherInfo(**d))
+    weather.description = response["weather"][0]["main"]
+    return weather
 
 
 if __name__ == "__main__":

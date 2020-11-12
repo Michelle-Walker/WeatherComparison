@@ -24,16 +24,19 @@
         <div class="column" style="background-color:#93B0BD;">
             <h2 style="text-align:right">{{city1}} &nbsp</h2>
             <p style="text-align:right">
-            {% for item in weather_string1%}
-                <p style="text-align:right">{{item}} &nbsp</p>
-            {% endfor %}
+            <p style="text-align:right">Description: {{weather1.description}} &nbsp</p>
+            <p style="text-align:right">Temperature, deg F: {{weather1.temp}} &nbsp</p>
+            <p style="text-align:right">Minimum Temperature, deg F: {{weather1.temp_min}} &nbsp</p>
+            <p style="text-align:right">Maximum Temperature, def F: {{weather1.temp_max}} &nbsp</p>
+            <p style="text-align:right">% Humidity: {{weather1.humidity}} &nbsp</p>
         </div>
         <div class="column" style="background-color:#BEBEBE;">
             <h2>&nbsp {{city2}}</h2>
-            {% for item in weather_string2%}
-                <p>&nbsp {{item}}</p>
-            {% endfor %}
-
+            <p>&nbsp Description: {{weather2.description}}</p>
+            <p>&nbsp Temperature, deg F: {{weather2.temp}}</p>
+            <p>&nbsp Minimum Temperature, deg F: {{weather2.temp_min}}</p>
+            <p>&nbsp Maximum Temperature, def F: {{weather2.temp_max}}</p>
+            <p>&nbsp % Humidity: {{weather2.humidity}}</p>
         </div>
     </div>
  </body>
